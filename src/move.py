@@ -2,6 +2,7 @@
 import rospy
 from geometry_msgs.msg import Twist
 
+
 def move():
     # Starts a new node
     rospy.init_node('simple_move_move', anonymous=True)
@@ -15,6 +16,7 @@ def move():
     distance = input("Type your distance:")
     isForward = input("Forward?: ")#True or False
     isReturn = input("Return?:")#True or False
+    isEndless= input("Endless?:")#True or False
 
     #Checking if the movement is forward or backwards
     if(isForward):
@@ -36,7 +38,7 @@ def move():
         t0 = rospy.Time.now().to_sec()
         current_distance = 0
 
-        rospy.loginfo(rospy.get_caller_id() + "velocity %s", vel_msg.linear.x)
+        rospy.loginfo(rospy.get_caller_id() + " publish velocity %s", vel_msg.linear.x)
         #Loop to move the turtle in an specified distance
         while(current_distance < distance):
             #Publish the velocity
@@ -50,17 +52,35 @@ def move():
         vel_msg.linear.x = 0
         #Force the robot to stop
         velocity_publisher.publish(vel_msg)
-        rospy.loginfo(rospy.get_caller_id() + "fnished %s", finished)
+
 
         #Return robot
-        if(isReturn and not finished):
-            print ("return")
-            rospy.sleep(1)
+        if(isReturn):
+            rospy.sleep(0.5)
             vel_msg.linear.x = -1 * speed
-            finished = 1
-        else:
-            finished = True
+            t0 = rospy.Time.now().to_sec()
+            current_distance = 0
 
+            rospy.loginfo(rospy.get_caller_id() + " velocity %s", vel_msg.linear.x)
+            #Loop to move the turtle in an specified distance
+            while(current_distance < distance):
+                #Publish the velocity
+                velocity_publisher.publish(vel_msg)
+                #Takes actual time to velocity calculus
+                t1=rospy.Time.now().to_sec()
+                #Calculates distancePoseStamped
+                current_distance= speed*(t1-t0)
+                rate.sleep()
+            #After the loop, stops the robot
+            vel_msg.linear.x = 0
+            #Force the robot to stop
+            velocity_publisher.publish(vel_msg)
+            rospy.loginfo(rospy.get_caller_id() + "fnished %s", finished)
+
+        if not isEndless:
+            exit()
+
+        rate.sleep()
 
 if __name__ == '__main__':
     try:
