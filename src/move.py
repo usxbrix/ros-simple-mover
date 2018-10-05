@@ -14,7 +14,7 @@ def move():
     speed = input("Input your speed:")
     distance = input("Type your distance:")
     isForward = input("Forward?: ")#True or False
-    isReturn = input("Return?:")#Ture or False
+    isReturn = input("Return?:")#True or False
 
     #Checking if the movement is forward or backwards
     if(isForward):
@@ -28,12 +28,15 @@ def move():
     vel_msg.angular.y = 0
     vel_msg.angular.z = 0
 
+    finished = False
+
     while not rospy.is_shutdown():
 
         #Setting the current time for distance calculus
         t0 = rospy.Time.now().to_sec()
         current_distance = 0
 
+        rospy.loginfo(rospy.get_caller_id() + "velocity %s", vel_msg.linear.x)
         #Loop to move the turtle in an specified distance
         while(current_distance < distance):
             #Publish the velocity
@@ -47,27 +50,18 @@ def move():
         vel_msg.linear.x = 0
         #Force the robot to stop
         velocity_publisher.publish(vel_msg)
+        rospy.loginfo(rospy.get_caller_id() + "fnished %s", finished)
 
         #Return robot
-        if(isReturn):
-            sleep(0.5)
-            vel_msg.linear.x=-1*vel_msg.linear.x
-            t0 = rospy.Time.now().to_sec()
-            current_distance = 0
-            #Loop to move the turtle in an specified distance
-            while(current_distance < distance):
-                #Publish the velocity
-                velocity_publisher.publish(vel_msg)
-                #Takes actual time to velocity calculus
-                t1=rospy.Time.now().to_sec()
-                #Calculates distancePoseStamped
-                current_distance= speed*(t1-t0)
-            #After the loop, stops the robot
-            vel_msg.linear.x = 0
-            #Force the robot to stop
-            velocity_publisher.publish(vel_msg)
-        rate.sleep()
-        
+        if(isReturn and not finished):
+            print ("return")
+            rospy.sleep(1)
+            vel_msg.linear.x = -1 * speed
+            finished = 1
+        else:
+            finished = True
+
+
 if __name__ == '__main__':
     try:
         #Testing our function
