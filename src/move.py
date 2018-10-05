@@ -20,9 +20,12 @@ def move():
 
     #Checking if the movement is forward or backwards
     if(isForward):
-        vel_msg.linear.x = abs(speed)
+        #vel_msg.linear.x = abs(speed)
+        speed = abs(speed)
     else:
-        vel_msg.linear.x = -abs(speed)
+        #vel_msg.linear.x = -abs(speed)
+        speed = -abs(speed)
+
     #Since we are moving just in x-axis
     vel_msg.linear.y = 0
     vel_msg.linear.z = 0
@@ -30,9 +33,9 @@ def move():
     vel_msg.angular.y = 0
     vel_msg.angular.z = 0
 
-    finished = False
-
     while not rospy.is_shutdown():
+        
+        vel_msg.linear.x = speed
 
         #Setting the current time for distance calculus
         t0 = rospy.Time.now().to_sec()
@@ -46,22 +49,23 @@ def move():
             #Takes actual time to velocity calculus
             t1=rospy.Time.now().to_sec()
             #Calculates distancePoseStamped
-            current_distance= speed*(t1-t0)
+            current_distance= abs(speed)*(t1-t0)
             rate.sleep()
         #After the loop, stops the robot
         vel_msg.linear.x = 0
+        rospy.loginfo(rospy.get_caller_id() + " publish velocity %s", vel_msg.linear.x)
         #Force the robot to stop
         velocity_publisher.publish(vel_msg)
 
 
         #Return robot
         if(isReturn):
-            rospy.sleep(0.5)
+            rospy.sleep(1)
             vel_msg.linear.x = -1 * speed
             t0 = rospy.Time.now().to_sec()
             current_distance = 0
 
-            rospy.loginfo(rospy.get_caller_id() + " velocity %s", vel_msg.linear.x)
+            rospy.loginfo(rospy.get_caller_id() + " publish velocity %s", vel_msg.linear.x)
             #Loop to move the turtle in an specified distance
             while(current_distance < distance):
                 #Publish the velocity
@@ -69,18 +73,18 @@ def move():
                 #Takes actual time to velocity calculus
                 t1=rospy.Time.now().to_sec()
                 #Calculates distancePoseStamped
-                current_distance= speed*(t1-t0)
+                current_distance= abs(speed)*(t1-t0)
                 rate.sleep()
             #After the loop, stops the robot
             vel_msg.linear.x = 0
+            rospy.loginfo(rospy.get_caller_id() + " publish velocity %s", vel_msg.linear.x)
             #Force the robot to stop
             velocity_publisher.publish(vel_msg)
-            rospy.loginfo(rospy.get_caller_id() + "fnished %s", finished)
 
-        if not isEndless:
+        if not isEndless or not isReturn:
             exit()
 
-        rate.sleep()
+        rospy.sleep(1)
 
 if __name__ == '__main__':
     try:
