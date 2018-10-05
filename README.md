@@ -1,5 +1,5 @@
 # ros-simple-mover
-simple ros node which publishes velocity commands
+Simple ROS node which publishes velocity commands
 
 _WARNING!!!_
 
