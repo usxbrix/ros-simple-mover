@@ -16,6 +16,7 @@ class RobotMovement:
     rate = None
 
     def __init__(self):
+
         # init_arguments(self)
 
         self.rate = rospy.Rate(10)  # 10hz
