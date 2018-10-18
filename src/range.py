@@ -9,18 +9,17 @@ class RobotMovement:
     speed = 0
     maxspeed = 2
     minspeed = 0
-	range_subscriber = None
-	velocity_publisher = None
-	vel_msg = None
+    range_subscriber = None
+    velocity_publisher = None
+    vel_msg = None
     rate = None
 
+    def __init__(self):
+        init_arguments(self)
 
-	def __init__(self):
-		init_arguments(self)
-
-        self.rate = rospy.Rate(10) # 10hz
+        self.rate = rospy.Rate(10)  # 10hz
         self.velocity_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-	    self.range_subscriber = rospy.Subscriber("range", Range, self.process_range)
+        self.range_subscriber = rospy.Subscriber("range", Range, self.process_range)
 
         self.vel_msg = Twist()
         self.vel_msg.linear.x = 0
@@ -50,7 +49,7 @@ class RobotMovement:
 
         while not rospy.is_shutdown():
 
-            #Force the robot to stop
+            # Force the robot to stop
             if range < 0.1:
                 self.stop_and_turn()
             elif range < 0.3:
@@ -69,7 +68,7 @@ class RobotMovement:
 
 if __name__ == '__main__':
 
-    #Receiveing the user's input
+    # Receiveing the user's input
     print("Let's move your robot")
     speed = input("Input your speed:")
     # distance = input("Type your distance:")
@@ -77,22 +76,19 @@ if __name__ == '__main__':
     # isReturn = input("Return?:")#True or False
     # isEndless= input("Endless?:")#True or False
 
-    #Checking if the movement is forward or backwards
-    #if(isForward):
-        #vel_msg.linear.x = abs(speed)
-    #    speed = abs(speed)
-    #else:
-        #vel_msg.linear.x = -abs(speed)
+    # Checking if the movement is forward or backwards
+    # if(isForward):
+    #   vel_msg.linear.x = abs(speed)
+    #   speed = abs(speed)
+    # else:
+    #   vel_msg.linear.x = -abs(speed)
     #    speed = -abs(speed)
 
     speed = abs(speed)
 
-    # Starts a new node
-
-
     try:
         rospy.init_node('simple_move_range', anonymous=True)
         robot_movement = RobotMovement()
-        #Testing our function
+        # Testing our function
         robot_movement.move(speed)
     except rospy.ROSInterruptException: pass
