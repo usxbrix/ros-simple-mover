@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import random
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Range
 
@@ -41,7 +42,7 @@ class RobotMovement:
         rospy.loginfo(rospy.get_caller_id() + " OBSTACLE: stopping")
         self.velocity_publisher.publish(self.vel_msg)
         rospy.sleep(1)
-        self.vel_msg.angular.z = self.rotspeed
+        self.vel_msg.angular.z = self.rotspeed * (-1)**random.randrange(2)
         rospy.loginfo(rospy.get_caller_id() + " OBSTACLE: turning speed %s", self.vel_msg.angular.z)
         self.velocity_publisher.publish(self.vel_msg)
         rospy.sleep(1)
