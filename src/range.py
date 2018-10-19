@@ -19,7 +19,7 @@ class RobotMovement:
 
         # init_arguments(self)
 
-        self.rate = rospy.Rate(1)  # 10hz
+        self.rate = rospy.Rate(10)  # 10hz
         self.velocity_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=10)
         self.range_subscriber = rospy.Subscriber("range", Range, self.process_range)
 
@@ -32,24 +32,25 @@ class RobotMovement:
         self.vel_msg.angular.z = 0
 
     def process_range(self, range):
-        #rospy.loginfo_throttle(1,rospy.get_caller_id() + "Range: %s", range.range)
-        rospy.loginfo(rospy.get_caller_id() + " Range: %s", range.range)
+        # rospy.loginfo_throttle(1,rospy.get_caller_id() + "Range: %s", range.range)
+        # rospy.loginfo(rospy.get_caller_id() + " Range: %s", range.range)
         self.range = range.range
 
     def stop_and_turn(self):
         self.vel_msg.linear.x = 0
-        rospy.loginfo(rospy.get_caller_id() + " publish linear velocity %s", self.vel_msg.linear.x)
+        rospy.loginfo(rospy.get_caller_id() + " OBSTACLE: stopping")
         self.velocity_publisher.publish(self.vel_msg)
         rospy.sleep(1)
         self.vel_msg.angular.z = self.rotspeed
-        rospy.loginfo(rospy.get_caller_id() + " publish angular velocity %s", self.vel_msg.angular.z)
+        rospy.loginfo(rospy.get_caller_id() + " OBSTACLE: turning speed %s", self.vel_msg.angular.z)
+        self.velocity_publisher.publish(self.vel_msg)
         rospy.sleep(1)
         self.vel_msg.angular.z = 0
 
     def move(self,speed):
         if speed > self.maxspeed:
             self.speed = self.maxspeed
-        elif speed < minspeed:
+        elif speed < self.minspeed:
             self.speed = 0
         else:
             self.speed = speed
@@ -59,14 +60,28 @@ class RobotMovement:
         while not rospy.is_shutdown():
 
             # Force the robot to stop
-            if self.range < 0.1:
+            if self.range < 0.15:
                 self.stop_and_turn()
-            elif self.range < 0.3:
-                self.vel_msg.linear.x = self.speed * 0.75
-            elif self.range < 0.5:
-                self.vel_msg.linear.x = self.speed * 0.5
+            elif self.range < 0.7:
+                newspeed = self.speed * self.range * 1.4  # just a factor
+                if newspeed < self.minspeed:
+                    self.vel_msg.linear.x = self.minspeed
+                else:
+                    self.vel_msg.linear.x = newspeed
+            # elif self.range < 0.5:
+            #     newspeed = self.speed * 0.5
+            #     if newspeed < self.minspeed:
+            #         self.vel_msg.linear.x = self.minspeed
+            #     else:
+            #         self.vel_msg.linear.x = newspeed
+            # elif self.range < 0.7:
+            #     newspeed = self.speed * 0.7
+            #     if newspeed < self.minspeed:
+            #         self.vel_msg.linear.x = self.minspeed
+            #     else:
+            #         self.vel_msg.linear.x = newspeed
 
-            rospy.loginfo(rospy.get_caller_id() + " publish velocity %s", self.vel_msg.linear.x)
+            rospy.loginfo(rospy.get_caller_id() + " MOVE: velocity %s", self.vel_msg.linear.x)
 
             self.velocity_publisher.publish(self.vel_msg)
 
@@ -99,6 +114,9 @@ if __name__ == '__main__':
         # Starts a new node
         rospy.init_node('simple_move_range', anonymous=True)
         robot_movement = RobotMovement()
+
+        # wait half a sec to get range data bevor moving
+        rospy.sleep(0.5)
         # Testing our function
         robot_movement.move(speed)
     except rospy.ROSInterruptException: pass
