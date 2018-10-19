@@ -19,7 +19,7 @@ class RobotMovement:
 
         # init_arguments(self)
 
-        self.rate = rospy.Rate(10)  # 10hz
+        self.rate = rospy.Rate(1)  # 10hz
         self.velocity_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=10)
         self.range_subscriber = rospy.Subscriber("range", Range, self.process_range)
 
@@ -32,13 +32,14 @@ class RobotMovement:
         self.vel_msg.angular.z = 0
 
     def process_range(self, range):
-        rospy.loginfo_throttle(1,rospy.get_caller_id() + "Range: %s", range.range)
+        #rospy.loginfo_throttle(1,rospy.get_caller_id() + "Range: %s", range.range)
+        rospy.loginfo(rospy.get_caller_id() + " Range: %s", range.range)
         self.range = range.range
 
     def stop_and_turn(self):
         self.vel_msg.linear.x = 0
         rospy.loginfo(rospy.get_caller_id() + " publish linear velocity %s", self.vel_msg.linear.x)
-        self.velocity_publisher.publish(vel_msg)
+        self.velocity_publisher.publish(self.vel_msg)
         rospy.sleep(1)
         self.vel_msg.angular.z = self.rotspeed
         rospy.loginfo(rospy.get_caller_id() + " publish angular velocity %s", self.vel_msg.angular.z)
@@ -46,8 +47,8 @@ class RobotMovement:
         self.vel_msg.angular.z = 0
 
     def move(self,speed):
-        if speed > maxspeed:
-            self.speed = maxspeed
+        if speed > self.maxspeed:
+            self.speed = self.maxspeed
         elif speed < minspeed:
             self.speed = 0
         else:
@@ -58,12 +59,12 @@ class RobotMovement:
         while not rospy.is_shutdown():
 
             # Force the robot to stop
-            if range < 0.1:
+            if self.range < 0.1:
                 self.stop_and_turn()
-            elif range < 0.3:
-                vel_msg.linear.x = self.speed * 0.75
-            elif range < 0.5:
-                vel_msg.linear.x = self.speed * 0.5
+            elif self.range < 0.3:
+                self.vel_msg.linear.x = self.speed * 0.75
+            elif self.range < 0.5:
+                self.vel_msg.linear.x = self.speed * 0.5
 
             rospy.loginfo(rospy.get_caller_id() + " publish velocity %s", self.vel_msg.linear.x)
 
