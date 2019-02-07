@@ -1,4 +1,16 @@
 #!/usr/bin/env python
+#
+# DESCRIPTION
+# range2speed2 uses range sensor (messages) to calculate speed.
+# when the robot is moving to a target (e.g a wall) the measuring begins a soon as the target 
+# is within the range (1.2) of the range sensor
+# the robot and the measuring stops when range is below 0.15m
+#
+# RUN
+# rosrun simple_movement range2speed2.py
+#
+#
+
 import rospy
 import random
 from geometry_msgs.msg import Twist
