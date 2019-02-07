@@ -60,13 +60,16 @@ class RobotMovement:
         # measure speed
         current_range = self.range
         current_time = rospy.Time.now()
-        duration = self.last_time - current_time
+        duration = current_time - self.last_time
         self.current_speed = (self.last_range - current_range) / duration.to_sec()
 
         # stopping
         self.vel_msg.linear.x = 0
         rospy.loginfo(rospy.get_caller_id() + " OBSTACLE: stopping SPEED: %s", self.current_speed)
         self.velocity_publisher.publish(self.vel_msg)
+
+        # disale measuring
+        self.measuring = False
 
 
     def move(self, speed):
@@ -85,10 +88,10 @@ class RobotMovement:
             if self.range < 0.15:
                 self.measure_and_stop()
                 return
-            if self.range < 1.20 and not measuring:
+            if self.range < 1.20 and not self.measuring:
                 self.last_range = self.range
                 self.last_time = rospy.Time.now()
-                measuring = True
+                self.measuring = True
 
             # rospy.loginfo(rospy.get_caller_id() + " MOVE: velocity %s RANGE: %s CURRENT_SPEED: %s", self.vel_msg.linear.x, self.range, self.current_speed)
 

@@ -17,7 +17,7 @@ class RobotMovement:
     rate = None
 
     last_time = None
-    last_range = None
+    last_range = 0
     current_speed = 0.0
 
     def __init__(self):
@@ -36,16 +36,19 @@ class RobotMovement:
         self.vel_msg.angular.y = 0
         self.vel_msg.angular.z = 0
 
+        self.last_time = rospy.Time.now()
+
     def process_range(self, range):
         # rospy.loginfo_throttle(1,rospy.get_caller_id() + "Range: %s", range.range)
         # rospy.loginfo(rospy.get_caller_id() + " Range: %s", range.range)
         self.range = range.range
         current_range = self.range
         current_time = rospy.Time.now()
-        duration = self.last_time - current_time
-        self.current_speed = (self.last_range - current_range) / duration.to_sec()
-        self.last_range = current_range
-        self.last_time = current_time
+        duration = current_time - self.last_time
+        if duration.to_sec() > 0.75:
+            self.current_speed = (self.last_range - current_range) / duration.to_sec()
+            self.last_range = current_range
+            self.last_time = current_time
 
     def stop_and_turn(self):
         self.vel_msg.linear.x = 0
@@ -120,7 +123,7 @@ if __name__ == '__main__':
     #   vel_msg.linear.x = -abs(speed)
     #    speed = -abs(speed)
 
-    speed = abs(speed)
+
 
     try:
         # Starts a new node
@@ -132,6 +135,7 @@ if __name__ == '__main__':
         while not rospy.is_shutdown():
             print("Let's move your robot")
             speed = input("Input your speed:")
+            speed = abs(speed)
             robot_movement.move(speed)
 
     except rospy.ROSInterruptException: pass
