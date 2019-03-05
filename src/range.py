@@ -8,8 +8,10 @@ from sensor_msgs.msg import Range
 class RobotMovement:
     range = 0
     speed = 0
-    maxspeed = 0.364
-    minspeed = 0.137
+    #maxspeed = 0.364
+    maxspeed = 0.564
+    #minspeed = 0.137
+    minspeed = 0.237
     rotspeed = 2
     range_subscriber = None
     velocity_publisher = None
@@ -22,7 +24,8 @@ class RobotMovement:
 
         self.rate = rospy.Rate(10)  # 10hz
         self.velocity_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-        self.range_subscriber = rospy.Subscriber("range", Range, self.process_range)
+        #self.range_subscriber = rospy.Subscriber("range", Range, self.process_range)
+        self.range_subscriber = rospy.Subscriber("sonars", Range, self.process_range)
 
         self.vel_msg = Twist()
         self.vel_msg.linear.x = 0
