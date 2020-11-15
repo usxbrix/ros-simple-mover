@@ -20,7 +20,7 @@ from sensor_msgs.msg import Range
 class RobotMovement:
     range = 0
     speed = 0
-    maxspeed = 0.364
+    maxspeed = 1000000
     minspeed = 0.137
     rotspeed = 2
     range_subscriber = None
@@ -31,7 +31,7 @@ class RobotMovement:
     measuring = False
 
     last_time = None
-    last_range = None
+    last_range = 0
     current_speed = 0.0
 
     def __init__(self):
@@ -39,8 +39,12 @@ class RobotMovement:
         # init_arguments(self)
 
         self.rate = rospy.Rate(30)  # 10hz
-        self.velocity_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-        self.range_subscriber = rospy.Subscriber("range", Range, self.process_range)
+        self.range_topic = "sonars"
+        self.velocity_publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.range_subscriber = rospy.Subscriber(self.range_topic, Range, self.process_range)
+        rospy.loginfo("wating for message " + self.range_topic)
+        rospy.wait_for_message(self.range_topic, Range)
+        rospy.loginfo("starting...")
 
         self.vel_msg = Twist()
         self.vel_msg.linear.x = 0
@@ -49,6 +53,8 @@ class RobotMovement:
         self.vel_msg.angular.x = 0
         self.vel_msg.angular.y = 0
         self.vel_msg.angular.z = 0
+
+        self.last_time = rospy.Time.now()
 
     def process_range(self, range):
         # rospy.loginfo_throttle(1,rospy.get_caller_id() + "Range: %s", range.range)
